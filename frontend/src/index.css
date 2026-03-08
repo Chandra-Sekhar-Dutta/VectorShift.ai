@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  @apply bg-gray-50;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Hide scrollbars while keeping scroll functionality */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Styled scrollbars for textareas */
+textarea::-webkit-scrollbar {
+  width: 6px;
+}
+
+textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+textarea::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+textarea::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+textarea {
+  scrollbar-width: thin;
+  scrollbar-color: #4b5563 transparent;
+}
+
+/* Custom components for common patterns */
+@layer components {
+  .node-field {
+    @apply flex items-center gap-2;
+  }
+
+  .node-label {
+    @apply font-semibold text-gray-700 min-w-[50px] text-sm;
+  }
+
+  .node-input {
+    @apply flex-1 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500;
+  }
+
+  .drag-button {
+    @apply px-3 py-2 bg-primary text-white rounded-lg text-sm font-medium cursor-grab shadow-md transition-all duration-200 hover:bg-secondary hover:shadow-lg hover:-translate-y-0.5 active:cursor-grabbing;
+  }
+
+  .submit-btn {
+    @apply px-6 py-3 bg-accent text-white rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 hover:bg-blue-600 active:scale-95;
+  }
+}
