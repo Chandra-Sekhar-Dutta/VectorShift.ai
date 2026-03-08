@@ -12,7 +12,7 @@ def process_llm(request: LLMRequest):
     Parameters:
     - system_prompt: System context/instructions for the LLM
     - user_prompt: User's input prompt
-    - model: Model name (default: gemini-pro)
+    - model: Model name (default from GEMINI_LLM_MODEL env var)
     - temperature: Creativity level 0-1 (default: 0.7)
     - max_tokens: Maximum tokens to generate (default: 1024)
     

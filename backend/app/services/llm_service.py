@@ -1,5 +1,5 @@
 import google.generativeai as genai
-from app.config import GOOGLE_API_KEY
+from app.config import GOOGLE_API_KEY, GEMINI_LLM_MODEL
 from app.models.schemas import LLMRequest
 
 class LLMService:
@@ -24,10 +24,10 @@ class LLMService:
                     'response': None
                 }
             
-            if not request.system_prompt and not request.user_prompt:
+            if not request.user_prompt and not request.system_prompt:
                 return {
                     'status': 'error',
-                    'message': 'Both system and user prompts cannot be empty',
+                    'message': 'At least a user prompt or system prompt must be provided',
                     'response': None
                 }
             
@@ -39,7 +39,7 @@ class LLMService:
                 full_prompt += f"<user>\n{request.user_prompt}\n</user>"
             
             # Initialize the model
-            model = genai.GenerativeModel(model_name=request.model)
+            model = genai.GenerativeModel(model_name=request.model or GEMINI_LLM_MODEL)
             
             # Configure generation parameters
             generation_config = genai.types.GenerationConfig(
