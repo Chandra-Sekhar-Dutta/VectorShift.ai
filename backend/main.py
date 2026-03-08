@@ -1,10 +1,11 @@
 from fastapi import FastAPI, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from collections import defaultdict, deque
 import os
 from dotenv import load_dotenv
+import google.generativeai as genai
 
 # Load environment variables
 load_dotenv()
@@ -12,7 +13,12 @@ load_dotenv()
 app = FastAPI()
 
 # Get configuration from environment variables
-FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:8000')
+GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
+
+# Configure Google Generative AI
+if GOOGLE_API_KEY:
+    genai.configure(api_key=GOOGLE_API_KEY)
 
 # Configure CORS
 app.add_middleware(
@@ -30,6 +36,13 @@ class Edge(BaseModel):
 class PipelineData(BaseModel):
     nodes: List[Dict[str, Any]]
     edges: List[Edge]
+
+class LLMRequest(BaseModel):
+    system_prompt: str
+    user_prompt: str
+    model: str = "gemini-3-flash-preview"
+    temperature: float = 0.7
+    max_tokens: int = 1024
 
 @app.get('/')
 def read_root():
@@ -103,4 +116,69 @@ def parse_pipeline(data: PipelineData):
             'num_nodes': 0,
             'num_edges': 0,
             'is_dag': False
+        }
+
+@app.post('/llm/process')
+def process_llm(request: LLMRequest):
+    """
+    Process LLM request using Google Generative AI (Gemini).
+    
+    Parameters:
+    - system_prompt: System context/instructions for the LLM
+    - user_prompt: User's input prompt
+    - model: Model name (default: gemini-pro)
+    - temperature: Creativity level 0-1 (default: 0.7)
+    - max_tokens: Maximum tokens to generate (default: 1024)
+    
+    Returns:
+    - response: Generated text from the LLM
+    - status: Processing status ('success' or 'error')
+    """
+    try:
+        if not GOOGLE_API_KEY:
+            return {
+                'status': 'error',
+                'message': 'Google API Key not configured. Please add GOOGLE_API_KEY to .env file',
+                'response': None
+            }
+        
+        if not request.system_prompt and not request.user_prompt:
+            return {
+                'status': 'error',
+                'message': 'Both system and user prompts cannot be empty',
+                'response': None
+            }
+        
+        # Combine system and user prompts
+        full_prompt = ""
+        if request.system_prompt:
+            full_prompt += f"<system>\n{request.system_prompt}\n</system>\n\n"
+        if request.user_prompt:
+            full_prompt += f"<user>\n{request.user_prompt}\n</user>"
+        
+        # Initialize the model
+        model = genai.GenerativeModel(model_name=request.model)
+        
+        # Configure generation parameters
+        generation_config = genai.types.GenerationConfig(
+            temperature=max(0, min(1, request.temperature)),  # Clamp between 0-1
+            max_output_tokens=request.max_tokens,
+        )
+        
+        # Generate response
+        response = model.generate_content(
+            full_prompt,
+            generation_config=generation_config,
+        )
+        
+        return {
+            'status': 'success',
+            'response': response.text if response else 'No response generated',
+            'model': request.model,
+        }
+    except Exception as e:
+        return {
+            'status': 'error',
+            'message': f'LLM Error: {str(e)}',
+            'response': None
         }
