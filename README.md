@@ -194,7 +194,7 @@ backend/
 
 5. **Start development server:**
    ```bash
-   python main.py
+   python -m uvicorn main:app --reload
    ```
    The API will run on `http://localhost:8000`
 
@@ -224,7 +224,7 @@ backend/
    python -m venv venv
    # Activate venv (see above)
    pip install -r requirements.txt
-   python main.py
+   python -m uvicorn main:app --reload
    ```
    Backend runs on `http://localhost:8000`
 
